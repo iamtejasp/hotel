@@ -7,11 +7,13 @@ import HomeFeatures from "@/components/home-page/HomeFeatures";
 import HomeFilterSearch from "@/components/home-page/HomeFilterSearch";
 import HomeNavbar from "@/components/home-page/HomeNavbar";
 import HomeTravelBlog from "@/components/home-page/HomeTravelBlog";
+import RoomBooking from "@/components/home-page/RoomSelect";
 
 const HomePage = () => {
   return (
     <div style={{ backgroundColor: "#f2f1f0" }}>
       <HomeNavbar />
+      <RoomBooking />
       {/* <HomeFilterSearch /> */}
       <DateRangePicker />
       <div style={{ maxWidth: "1000px", padding: "20px" }} className="mx-auto">

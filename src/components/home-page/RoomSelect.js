@@ -1,176 +1,147 @@
 import React, { useState } from "react";
+import { PlusCircle, MinusCircle, ChevronDown, X } from "lucide-react";
 
-const RoomSelectorDialog = () => {
+const RoomBooking = () => {
   const [rooms, setRooms] = useState([{ adults: 2, children: [] }]);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const maxRooms = 9;
 
-  // Toggle dialog visibility
-  const toggleDialog = () => {
-    setIsDialogOpen(!isDialogOpen);
-  };
-
-  // Add a new room
+  // Function to add a room, limited to 9 rooms
   const addRoom = () => {
-    if (rooms.length < maxRooms) {
+    if (rooms.length < 9) {
       setRooms([...rooms, { adults: 2, children: [] }]);
     }
   };
 
-  // Remove a room
+  // Function to remove a room
   const removeRoom = (index) => {
-    const updatedRooms = rooms.filter((_, i) => i !== index);
-    setRooms(updatedRooms);
+    const newRooms = [...rooms];
+    newRooms.splice(index, 1);
+    setRooms(newRooms);
   };
 
-  // Update adults or children in a room
-  const updateRoom = (index, key, value) => {
-    const updatedRooms = [...rooms];
-    updatedRooms[index][key] = value;
-    setRooms(updatedRooms);
+  // Function to update the number of adults in a room, min 1, max 6 adults
+  const updateAdults = (index, increment) => {
+    const newRooms = [...rooms];
+    const newAdultCount = newRooms[index].adults + increment;
+    newRooms[index].adults = Math.max(1, Math.min(6, newAdultCount)); // Ensure at least 1 adult and at most 6 adults
+    setRooms(newRooms);
   };
 
-  // Add a child to a room
-  const addChild = (index) => {
-    const updatedRooms = [...rooms];
-    updatedRooms[index].children.push(0); // Default age 0 for a new child
-    setRooms(updatedRooms);
+  // Function to add a child to a room, limited to 4 children per room
+  const addChild = (roomIndex, age) => {
+    const newRooms = [...rooms];
+    if (newRooms[roomIndex].children.length < 4) {
+      // Limit to 4 children
+      newRooms[roomIndex].children.push(age);
+      setRooms(newRooms);
+    }
   };
 
-  // Update a child's age
-  const updateChildAge = (roomIndex, childIndex, age) => {
-    const updatedRooms = [...rooms];
-    updatedRooms[roomIndex].children[childIndex] = age;
-    setRooms(updatedRooms);
-  };
-
-  // Remove a child
+  // Function to remove a child from a room
   const removeChild = (roomIndex, childIndex) => {
-    const updatedRooms = [...rooms];
-    updatedRooms[roomIndex].children.splice(childIndex, 1);
-    setRooms(updatedRooms);
+    const newRooms = [...rooms];
+    newRooms[roomIndex].children.splice(childIndex, 1);
+    setRooms(newRooms);
   };
 
-  // Calculate total number of guests
-  const totalGuests = rooms.reduce((total, room) => {
-    return total + room.adults + room.children.length;
-  }, 0);
+  // Calculate total guests
+  const totalGuests = rooms.reduce(
+    (sum, room) => sum + room.adults + room.children.length,
+    0
+  );
 
   return (
-    <div className="relative">
-      {/* Button to open dialog */}
-      <button
-        onClick={toggleDialog}
-        className="px-4 py-2 border border-gray-400 rounded-md text-sm text-gray-900 bg-white flex items-center"
-      >
-        {rooms.length} room{rooms.length > 1 ? "s" : ""} for {totalGuests} guest
-        {totalGuests > 1 ? "s" : ""}
-        <span className="ml-2">{isDialogOpen ? "▲" : "▼"}</span>
-      </button>
+    <div className="p-4 bg-white rounded-lg shadow">
+      <div className="flex justify-between items-center mb-4">
+        <div>Check-out Oct 16, 2024</div>
+        <div className="relative">
+          <button className="flex items-center bg-red-100 text-red-600 px-3 py-2 rounded">
+            {rooms.length} rooms for {totalGuests} guests
+            <ChevronDown size={20} className="ml-2" />
+          </button>
+        </div>
+      </div>
 
-      {/* Dialog */}
-      {isDialogOpen && (
-        <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
-            <h2 className="text-lg font-semibold mb-4">
-              Select Rooms and Guests
-            </h2>
-
-            {/* Room List */}
-            {rooms.map((room, roomIndex) => (
-              <div key={roomIndex} className="mb-4 border-b pb-4">
-                <div className="flex justify-between items-center mb-2">
-                  <h3 className="text-md font-semibold">
-                    Room {roomIndex + 1}
-                  </h3>
-                  {roomIndex !== 0 && (
-                    <button
-                      onClick={() => removeRoom(roomIndex)}
-                      className="text-red-600 text-sm"
-                    >
-                      Remove
-                    </button>
-                  )}
-                </div>
-
-                {/* Adults */}
-                <div className="mb-2">
-                  <label className="block text-sm">Adults</label>
-                  <input
-                    type="number"
-                    min="1"
-                    className="border border-gray-300 rounded p-1 w-full"
-                    value={room.adults}
-                    onChange={(e) =>
-                      updateRoom(roomIndex, "adults", parseInt(e.target.value))
-                    }
-                  />
-                </div>
-
-                {/* Children */}
-                <div>
-                  <label className="block text-sm">Children</label>
-                  {room.children.map((child, childIndex) => (
-                    <div key={childIndex} className="flex items-center mt-2">
-                      <select
-                        value={child}
-                        onChange={(e) =>
-                          updateChildAge(
-                            roomIndex,
-                            childIndex,
-                            parseInt(e.target.value)
-                          )
-                        }
-                        className="border border-gray-300 p-1 rounded mr-2 w-full"
-                      >
-                        {Array.from({ length: 18 }, (_, i) => (
-                          <option key={i} value={i}>
-                            {i} years
-                          </option>
-                        ))}
-                      </select>
-                      <button
-                        onClick={() => removeChild(roomIndex, childIndex)}
-                        className="text-red-500 text-sm ml-2"
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  ))}
-
-                  {/* Add child */}
-                  <button
-                    onClick={() => addChild(roomIndex)}
-                    className="mt-2 text-blue-600 text-sm"
-                  >
-                    + Add a child
-                  </button>
-                </div>
-              </div>
-            ))}
-
-            {/* Add Room Button */}
-            {rooms.length < maxRooms && (
+      {rooms.map((room, roomIndex) => (
+        <div key={roomIndex} className="mb-4 pb-4 border-b">
+          <div className="flex justify-between items-center mb-2">
+            <h3 className="font-semibold">Room {roomIndex + 1}</h3>
+            {roomIndex > 0 && (
               <button
-                onClick={addRoom}
-                className="w-full text-blue-600 text-sm mt-4"
+                onClick={() => removeRoom(roomIndex)}
+                className="text-red-600"
               >
-                + Add another room
+                Remove
               </button>
             )}
+          </div>
 
-            {/* Done Button */}
-            <button
-              onClick={toggleDialog}
-              className="mt-6 w-full bg-blue-500 text-white py-2 rounded-md text-sm"
-            >
-              Done
-            </button>
+          <div className="flex justify-between items-center mb-2">
+            <div>
+              <div className="font-semibold mb-1">Adults</div>
+              <div className="flex items-center">
+                <button
+                  onClick={() => updateAdults(roomIndex, -1)}
+                  className="text-gray-500"
+                >
+                  <MinusCircle size={24} />
+                </button>
+                <span className="mx-2">{room.adults}</span>
+                <button
+                  onClick={() => updateAdults(roomIndex, 1)}
+                  className="text-gray-500"
+                >
+                  <PlusCircle size={24} />
+                </button>
+              </div>
+            </div>
+            <div>
+              <div className="font-semibold mb-1">Children</div>
+              <div className="flex flex-wrap gap-2">
+                {room.children.map((age, childIndex) => (
+                  <div
+                    key={childIndex}
+                    className="bg-gray-100 px-2 py-1 rounded flex items-center"
+                  >
+                    {age} years
+                    <button
+                      onClick={() => removeChild(roomIndex, childIndex)}
+                      className="ml-1 text-gray-500"
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+                ))}
+                {room.children.length < 4 && ( // Show 'Add a child' if less than 4 children
+                  <select
+                    onChange={(e) => addChild(roomIndex, e.target.value)}
+                    value=""
+                    className="bg-gray-100 px-2 py-1 rounded"
+                  >
+                    <option value="">Add a child</option>
+                    {[...Array(18)].map((_, i) => (
+                      <option key={i} value={i}>
+                        {i} years
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </div>
+            </div>
           </div>
         </div>
+      ))}
+
+      {rooms.length < 9 && ( // Show 'Add a room' button if less than 9 rooms
+        <button onClick={addRoom} className="text-blue-600 flex items-center">
+          <PlusCircle size={20} className="mr-2" /> Add a room
+        </button>
       )}
+
+      <button className="mt-4 bg-red-600 text-white px-4 py-2 rounded w-full">
+        Done
+      </button>
     </div>
   );
 };
 
-export default RoomSelectorDialog;
+export default RoomBooking;
